@@ -39,6 +39,7 @@ void terrgen::operate(const rule_func& rules)
 	bool* buffer = new bool[_size];
 	for (int i = 0; i < _size; i++)
 		buffer[i] = _phase_grid[i];
+
 	for (int x = 0; x < _width; x++)
 	{
 		for (int y = 0; y < _height; y++)
@@ -47,10 +48,11 @@ void terrgen::operate(const rule_func& rules)
 			int count = 0;
 			for (int i = 0; i < 8; i++)
 				count += neighbors[i];
-			set(x, y, rules(count));
+			set(x, y, rules(get(buffer, x, y), count));
 			delete[] neighbors;
 		}
 	}
+
 	delete[] buffer;
 	_iterations++;
 }
@@ -65,10 +67,7 @@ void terrgen::scatter(int a, int b)
 
 void terrgen::spots_large(bool less)
 {
-	//rule funcion
-	auto rules = [](int count) { return count <= 4; };
-
-	//count of operations
+	auto rules = [](bool state, int count) { return count <= 4; };
 	auto c = less ? 40 : 10;
 
 	scatter(0, 1);
@@ -78,10 +77,7 @@ void terrgen::spots_large(bool less)
 
 void terrgen::spots_small()
 {
-	//rule funcion
-	auto rules = [](int count) { return count <= 6; };
-
-	//count of operations
+	auto rules = [](bool state, int count) { return count <= 6; };
 	auto c = 9;
 
 	scatter(0, 4);
@@ -89,12 +85,26 @@ void terrgen::spots_small()
 		operate(rules);
 }
 
+void terrgen::cavern(int steps, int a, int b)
+{
+	auto rules = [](bool state, int count)
+	{
+		if (count > 4)
+			return true;
+		if (count < 4)
+			return false;
+		return state;
+	};
+
+	scatter(a, b);
+	for (int i = 0; i < steps; i++)
+		operate(rules);
+}
+
 void terrgen::terrain()
 {
-	//rule function
-	auto rules = [](int count) { return count > 5; };
+	auto rules = [](bool state, int count) { return count > 5; };
 
-	//counts of each stage's operations (base + fluctuation)
 	auto c1 = 20, c2 = 5, c3 = 10, c4 = 5;
 	c1 += std::uniform_int_distribution<int>(-c1 / 4, c1 / 4)(_engine);
 	c2 += std::uniform_int_distribution<int>(-c2 / 4, c2 / 4)(_engine);
@@ -117,16 +127,12 @@ void terrgen::terrain()
 		flip_all();
 }
 
-void terrgen::craters(int a, int b)
+void terrgen::craters(int steps)
 {
-	//rule function
-	auto rules = [](int count) { return count > 5; };
-
-	//count of operations
-	auto c = std::uniform_int_distribution<int>(a, b)(_engine);
+	auto rules = [](bool state, int count) { return count > 5; };
 
 	scatter();
-	for (int i = 0; i < c; i++)
+	for (int i = 0; i < steps; i++)
 		operate(rules);
 }
 
@@ -146,9 +152,9 @@ void terrgen::vegetate()
 			_uni_grid[i] = 2;
 }
 
-void terrgen::populate()
+void terrgen::diversify()
 {
-	auto apply = [this](int state, int mod = 3)
+	auto apply = [this](uint8_t state, uint8_t mod = 3)
 	{
 		for (int i = 0; i < _size; i++)
 			if (_phase_grid[i] && _uni_grid[i] == state)
@@ -163,7 +169,7 @@ void terrgen::populate()
 	spots_large();
 	apply(1);
 
-	spots_large();
+	cavern();
 	apply(2);
 	scatter(-2, 1);
 	apply(2);
@@ -195,7 +201,7 @@ terrgen::~terrgen()
 	delete[] _uni_grid;
 }
 
-void terrgen::terraform(int phases)
+void terrgen::generate(int phases)
 {
 	_seed = _engine();
 	_iterations = 0;
@@ -207,7 +213,7 @@ void terrgen::terraform(int phases)
 	vegetate();
 	if (phases < 3)
 		return;
-	populate();
+	diversify();
 	if (phases < 4)
 		return;
 	irrigate();

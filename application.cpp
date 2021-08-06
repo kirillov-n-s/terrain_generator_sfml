@@ -51,7 +51,7 @@ void application::update(int phases)
 {
 	std::chrono::system_clock clock;
 	auto then = clock.now();
-	_terrgen->terraform(phases);
+	_terrgen->generate(phases);
 	_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock.now() - then).count();
 }
 

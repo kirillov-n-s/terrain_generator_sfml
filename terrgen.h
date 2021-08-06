@@ -23,27 +23,28 @@ class terrgen
 	void flip_all();
 
 	//generic automaton operate
-	using rule_func = std::function<bool(int)>;
+	using rule_func = std::function<bool(bool, int)>;
 	void operate(const rule_func& rules);
 
 	//patterns
 	void scatter(int a = 0, int b = 8);
 	void spots_large(bool less = false);
 	void spots_small();
+	void cavern(int steps = 5, int a = 0, int b = 1);
 	void terrain();
-	void craters(int a = 12, int b = 17);
+	void craters(int steps = 15);
 
 	//phases
 	void fertilize();
 	void vegetate();
-	void populate();
+	void diversify();
 	void irrigate();
 
 public:
 	terrgen(uint32_t width, uint32_t height, uint32_t seed = std::random_device()());
 	~terrgen();
 
-	void terraform(int phases = 1);
+	void generate(int phases = 4);
 
 	uint8_t get(uint32_t x, uint32_t y) const;
 
