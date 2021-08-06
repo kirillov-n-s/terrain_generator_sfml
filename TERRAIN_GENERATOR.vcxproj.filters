@@ -21,7 +21,7 @@
     <ClCompile Include="application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="automaton.cpp">
+    <ClCompile Include="terrgen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -29,7 +29,7 @@
     <ClInclude Include="application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="automaton.h">
+    <ClInclude Include="terrgen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,7 +16,7 @@ void application::draw(uint32_t x, uint32_t y)
 		water = { 0x32, 0x52, 0x88 };
 
 	sf::Color color;
-	switch (_automaton->get(x, y))
+	switch (_terrgen->get(x, y))
 	{
 	case 0:
 		color = sand;
@@ -51,7 +51,7 @@ void application::update(int phases)
 {
 	std::chrono::system_clock clock;
 	auto then = clock.now();
-	_automaton->terraform(phases);
+	_terrgen->terraform(phases);
 	_time = std::chrono::duration_cast<std::chrono::milliseconds>(clock.now() - then).count();
 }
 
@@ -90,18 +90,18 @@ void application::handle_events()
 void application::render()
 {
 	_window->clear(sf::Color::Black);
-	for (int x = 0; x < _automaton->width(); x++)
-		for (int y = 0; y < _automaton->height(); y++)
+	for (int x = 0; x < _terrgen->width(); x++)
+		for (int y = 0; y < _terrgen->height(); y++)
 			draw(x, y);
 	_window->display();
 }
 
-application::application(automaton* automaton, const std::string& title, uint32_t dimension, uint32_t framerate_limit)
-	: _automaton(automaton), _title(title)
+application::application(terrgen* terrgen, const std::string& title, uint32_t dimension, uint32_t framerate_limit)
+	: _terrgen(terrgen), _title(title)
 {
 	_cell_dim = dimension;
-	auto width = _automaton->width() * _cell_dim;
-	auto height = _automaton->height() * _cell_dim;
+	auto width = _terrgen->width() * _cell_dim;
+	auto height = _terrgen->height() * _cell_dim;
 
 	_window = new sf::RenderWindow(sf::VideoMode(width, height), _title);
 	if (!framerate_limit)
@@ -132,9 +132,9 @@ void application::run()
 		uint64_t fps = 1000 / std::chrono::duration_cast<std::chrono::milliseconds>(clock.now() - then).count();
 		std::string log = "[FPS: " + std::to_string(fps)
 			+ "] [Time: " + std::to_string(_time)
-			+ "] [Iterations: " + std::to_string(_automaton->iterations())
-			+ "] [Phases: " + std::to_string(_automaton->phases())
-			+ "] [Seed: " + std::to_string(_automaton->seed()) + "]";
+			+ "] [Iterations: " + std::to_string(_terrgen->iterations())
+			+ "] [Phases: " + std::to_string(_terrgen->phases())
+			+ "] [Seed: " + std::to_string(_terrgen->seed()) + "]";
 		_window->setTitle(_title + " " + log);
 	}
 }

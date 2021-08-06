@@ -3,7 +3,7 @@
 
 int main()
 {
-	auto aut = new automaton(320, 180);
+	auto aut = new terrgen(320, 180);
 	application app(aut);
 	app.run();
 	delete aut;

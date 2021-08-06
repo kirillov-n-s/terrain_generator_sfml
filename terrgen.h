@@ -2,7 +2,7 @@
 #include <random>
 #include <functional>
 
-class automaton
+class terrgen
 {
 	bool* _phase_grid;
 	uint8_t* _uni_grid;
@@ -16,12 +16,13 @@ class automaton
 	uint32_t _height;
 	uint32_t _size;
 
+	//phase grid utility
 	bool get(bool* buffer, uint32_t x, uint32_t y) const;
 	bool* get_neighbors(bool* buffer, uint32_t x, uint32_t y);
 	void set(uint32_t x, uint32_t y, bool value);
 	void flip_all();
 
-	//generic operate
+	//generic automaton operate
 	using rule_func = std::function<bool(int)>;
 	void operate(const rule_func& rules);
 
@@ -39,8 +40,8 @@ class automaton
 	void irrigate();
 
 public:
-	automaton(uint32_t width, uint32_t height, uint32_t seed = std::random_device()());
-	~automaton();
+	terrgen(uint32_t width, uint32_t height, uint32_t seed = std::random_device()());
+	~terrgen();
 
 	void terraform(int phases = 1);
 

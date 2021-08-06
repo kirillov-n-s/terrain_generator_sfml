@@ -1,11 +1,11 @@
-#include "automaton.h"
+#include "terrgen.h"
 
-bool automaton::get(bool* buffer, uint32_t x, uint32_t y) const
+bool terrgen::get(bool* buffer, uint32_t x, uint32_t y) const
 {
 	return buffer[(y * _width + x) % _size];
 }
 
-bool* automaton::get_neighbors(bool* buffer, uint32_t x, uint32_t y)
+bool* terrgen::get_neighbors(bool* buffer, uint32_t x, uint32_t y)
 {
 	bool* res = new bool[8];
 
@@ -23,18 +23,18 @@ bool* automaton::get_neighbors(bool* buffer, uint32_t x, uint32_t y)
 	return res;
 }
 
-void automaton::set(uint32_t x, uint32_t y, bool value)
+void terrgen::set(uint32_t x, uint32_t y, bool value)
 {
 	_phase_grid[(y * _width + x) % _size] = value;
 }
 
-void automaton::flip_all()
+void terrgen::flip_all()
 {
 	for (int i = 0; i < _size; i++)
 		_phase_grid[i] ^= true;
 }
 
-void automaton::operate(const rule_func& rules)
+void terrgen::operate(const rule_func& rules)
 {
 	bool* buffer = new bool[_size];
 	for (int i = 0; i < _size; i++)
@@ -56,14 +56,14 @@ void automaton::operate(const rule_func& rules)
 }
 
 //patterns
-void automaton::scatter(int a, int b)
+void terrgen::scatter(int a, int b)
 {
 	std::uniform_int_distribution<int> distrib(a, b);
 	for (int i = 0; i < _size; i++)
 		_phase_grid[i] = (bool)std::max(0, distrib(_engine));
 }
 
-void automaton::spots_large(bool less)
+void terrgen::spots_large(bool less)
 {
 	//rule funcion
 	auto rules = [](int count) { return count <= 4; };
@@ -76,7 +76,7 @@ void automaton::spots_large(bool less)
 		operate(rules);
 }
 
-void automaton::spots_small()
+void terrgen::spots_small()
 {
 	//rule funcion
 	auto rules = [](int count) { return count <= 6; };
@@ -89,7 +89,7 @@ void automaton::spots_small()
 		operate(rules);
 }
 
-void automaton::terrain()
+void terrgen::terrain()
 {
 	//rule function
 	auto rules = [](int count) { return count > 5; };
@@ -117,7 +117,7 @@ void automaton::terrain()
 		flip_all();
 }
 
-void automaton::craters(int a, int b)
+void terrgen::craters(int a, int b)
 {
 	//rule function
 	auto rules = [](int count) { return count > 5; };
@@ -131,14 +131,14 @@ void automaton::craters(int a, int b)
 }
 
 //phases
-void automaton::fertilize()
+void terrgen::fertilize()
 {
 	terrain();
 	for (int i = 0; i < _size; i++)
 		_uni_grid[i] = _phase_grid[i];
 }
 
-void automaton::vegetate()
+void terrgen::vegetate()
 {
 	terrain();
 	for (int i = 0; i < _size; i++)
@@ -146,7 +146,7 @@ void automaton::vegetate()
 			_uni_grid[i] = 2;
 }
 
-void automaton::populate()
+void terrgen::populate()
 {
 	auto apply = [this](int state, int mod = 3)
 	{
@@ -169,7 +169,7 @@ void automaton::populate()
 	apply(2);
 }
 
-void automaton::irrigate()
+void terrgen::irrigate()
 {
 	spots_large(true);
 	for (int i = 0; i < _size; i++)
@@ -177,7 +177,7 @@ void automaton::irrigate()
 			_uni_grid[i] = 7;
 }
 
-automaton::automaton(uint32_t width, uint32_t height, uint32_t seed)
+terrgen::terrgen(uint32_t width, uint32_t height, uint32_t seed)
 	: _width(width), _height(height), _size(width * height), _seed(seed)
 {
 	_phase_grid = new bool[_size];
@@ -189,13 +189,13 @@ automaton::automaton(uint32_t width, uint32_t height, uint32_t seed)
 	std::memset(_uni_grid, 0, sizeof(uint8_t) * _size);
 }
 
-automaton::~automaton()
+terrgen::~terrgen()
 {
 	delete[] _phase_grid;
 	delete[] _uni_grid;
 }
 
-void automaton::terraform(int phases)
+void terrgen::terraform(int phases)
 {
 	_seed = _engine();
 	_iterations = 0;
@@ -213,32 +213,32 @@ void automaton::terraform(int phases)
 	irrigate();
 }
 
-uint8_t automaton::get(uint32_t x, uint32_t y) const
+uint8_t terrgen::get(uint32_t x, uint32_t y) const
 {
 	return _uni_grid[(y * _width + x) % _size];
 }
 
-uint32_t automaton::width() const
+uint32_t terrgen::width() const
 {
 	return _width;
 }
 
-uint32_t automaton::height() const
+uint32_t terrgen::height() const
 {
 	return _height;
 }
 
-uint32_t automaton::iterations() const
+uint32_t terrgen::iterations() const
 {
 	return _iterations;
 }
 
-uint32_t automaton::phases() const
+uint32_t terrgen::phases() const
 {
 	return _phases;
 }
 
-uint32_t automaton::seed() const
+uint32_t terrgen::seed() const
 {
 	return _seed;
 }
