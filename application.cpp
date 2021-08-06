@@ -3,44 +3,44 @@
 void application::draw(uint32_t x, uint32_t y)
 {
 	_cell.setPosition({ (float)(x * _cell_dim), (float)(y * _cell_dim) });
-	sf::Color water = { 0x08, 0x20, 0x32 },
-		land = { 0xb0, 0x5b, 0x3b },
-		sand = { 0xff, 0xda, 0xb9 },
-		//trench = { 0x08, 0x20, 0x32 },
-		//swamp = { 0x7f, 0x8b, 0x52 },
-		forest = { 0x5d, 0x82, 0x33 },
-		ice = { 0xb5, 0xea, 0xea },
-		snow = { 0xe1, 0xe8, 0xeb },
-		tundra = { 0xc9, 0xe4, 0xc5 };
+
+	sf::Color sand = { 0xff, 0xda, 0xb9 },
+		soil = { 0xb0, 0x5b, 0x3b },
+		greenery = { 0x5d, 0x82, 0x33 },
+
+		rock = { 0x9e, 0x75, 0x40 }, //{ 0x73, 0x40, 0x46 },
+		swamp = { 0x44, 0x5c, 0x3c },
+		tree = { 0x1f, 0x44, 0x1e },
+
+		succulent = { 0x7f, 0x8b, 0x52 },
+		water = { 0x32, 0x52, 0x88 };
+
 	sf::Color color;
 	switch (_automaton->get(x, y))
 	{
 	case 0:
-		color = water;
-		break;
-	case 1:
-		color = land;
-		break;
-	/*case 2:
-		color = trench;
-		break;*/
-	case 3:
 		color = sand;
 		break;
-	/*case 4:
+	case 1:
+		color = soil;
+		break;
+	case 2:
+		color = greenery;
+		break;
+	case 3:
+		color = rock;
+		break;
+	case 4:
 		color = swamp;
-		break;*/
+		break;
 	case 5:
-		color = forest;
+		color = tree;
 		break;
 	case 6:
-		color = ice;
+		color = succulent;
 		break;
 	case 7:
-		color = snow;
-		break;
-	case 8:
-		color = tundra;
+		color = water;
 		break;
 	}
 	_cell.setFillColor(color);
@@ -134,7 +134,12 @@ void application::run()
 		render();
 
 		uint64_t fps = 1000 / std::chrono::duration_cast<std::chrono::milliseconds>(clock.now() - then).count();
-		_window->setTitle(_title + " [FPS: " + std::to_string(fps) + "] [Time: " + std::to_string(_time) + "] [Iterations: " + std::to_string(_automaton->iterations()) + "] [Phases: " + std::to_string(_automaton->phases()) + "]");
+		std::string log = "[FPS: " + std::to_string(fps)
+			+ "] [Time: " + std::to_string(_time)
+			+ "] [Iterations: " + std::to_string(_automaton->iterations())
+			+ "] [Phases: " + std::to_string(_automaton->phases())
+			+ "] [Seed: " + std::to_string(_automaton->seed()) + "]";
+		_window->setTitle(_title + " " + log);
 	}
 }
 
@@ -187,3 +192,10 @@ void application::run()
 		dark = { 0x08, 0x20, 0x32 };
 		break;
 	}*/
+
+	/*sf::Color sand = { 0xff, 0xda, 0xb9 },
+		earth = { 0xb0, 0x5b, 0x3b },
+		rock = { 0x73, 0x40, 0x46 },
+		forest = { 0x5d, 0x82, 0x33 },
+		snow = { 0xe1, 0xe8, 0xeb },
+		tundra = { 0xc9, 0xe4, 0xc5 };*/

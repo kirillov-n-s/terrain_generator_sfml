@@ -34,16 +34,7 @@ void automaton::flip_all()
 		_phase_grid[i] ^= true;
 }
 
-void automaton::randomize()
-{
-	int a = 0;
-	int b = 8;
-	std::uniform_int_distribution<int> distrib(a, b);
-	for (int i = 0; i < _size; i++)
-		_phase_grid[i] = (bool)distrib(_engine);
-}
-
-void automaton::operate()
+void automaton::operate(const rule_func& rules)
 {
 	bool* buffer = new bool[_size];
 	for (int i = 0; i < _size; i++)
@@ -56,8 +47,7 @@ void automaton::operate()
 			int count = 0;
 			for (int i = 0; i < 8; i++)
 				count += neighbors[i];
-			bool state = count > 5;
-			set(x, y, state);
+			set(x, y, rules(count));
 			delete[] neighbors;
 		}
 	}
@@ -65,94 +55,121 @@ void automaton::operate()
 	_iterations++;
 }
 
-void automaton::generate()
+//patterns
+void automaton::scatter(int a, int b)
 {
-	randomize();
+	std::uniform_int_distribution<int> distrib(a, b);
+	for (int i = 0; i < _size; i++)
+		_phase_grid[i] = (bool)std::max(0, distrib(_engine));
+}
 
-	auto c1 = std::uniform_int_distribution<int>(-3, 3)(_engine);
-	auto c2 = std::uniform_int_distribution<int>(-1, 1)(_engine);
-	auto c3 = std::uniform_int_distribution<int>(-2, 2)(_engine);
-	auto c4 = std::uniform_int_distribution<int>(-1, 1)(_engine);
+void automaton::spots_large(bool less)
+{
+	//rule funcion
+	auto rules = [](int count) { return count <= 4; };
 
-	for (int i = 0; i < 20 + c1; i++)
-		operate();
-	flip_all();
-	for (int i = 0; i < 5 + c2; i++)
-		operate();
-	flip_all();
-	for (int i = 0; i < 10 + c3; i++)
-		operate();
-	flip_all();
-	for (int i = 0; i < 5 + c4; i++)
-		operate();
+	//count of operations
+	auto c = less ? 40 : 10;
 
+	scatter(0, 1);
+	for (int i = 0; i < c; i++)
+		operate(rules);
+}
+
+void automaton::spots_small()
+{
+	//rule funcion
+	auto rules = [](int count) { return count <= 6; };
+
+	//count of operations
+	auto c = 9;
+
+	scatter(0, 4);
+	for (int i = 0; i < c; i++)
+		operate(rules);
+}
+
+void automaton::terrain()
+{
+	//rule funcion
+	auto rules = [](int count) { return count > 5; };
+
+	//counts of each stage's operations (base + fluctuation)
+	auto c1 = 20, c2 = 5, c3 = 10, c4 = 5;
+	c1 += std::uniform_int_distribution<int>(-c1 / 4, c1 / 4)(_engine);
+	c2 += std::uniform_int_distribution<int>(-c2 / 4, c2 / 4)(_engine);
+	c3 += std::uniform_int_distribution<int>(-c3 / 4, c3 / 4)(_engine);
+	c4 += std::uniform_int_distribution<int>(-c4 / 4, c4 / 4)(_engine);
+
+	scatter();
+	for (int i = 0; i < c1; i++)
+		operate(rules);
+	flip_all();
+	for (int i = 0; i < c2; i++)
+		operate(rules);
+	flip_all();
+	for (int i = 0; i < c3; i++)
+		operate(rules);
+	flip_all();
+	for (int i = 0; i < c4; i++)
+		operate(rules);
 	if (std::uniform_int_distribution<int>(0, 1)(_engine))
 		flip_all();
 }
 
-void automaton::landmasses()
+//phases
+void automaton::fertilize()
 {
-	generate();
+	terrain();
 	for (int i = 0; i < _size; i++)
 		_uni_grid[i] = _phase_grid[i];
 }
 
-void automaton::wastes()
+void automaton::vegetate()
 {
-	generate();
-	for (int i = 0; i < _size; i++)
-		if (_phase_grid[i] && _uni_grid[i])
-			_uni_grid[i] = 3;
-}
-
-void automaton::vegetation()
-{
-	generate();
+	terrain();
 	for (int i = 0; i < _size; i++)
 		if (_phase_grid[i] && _uni_grid[i] == 1)
-			_uni_grid[i] = 5;
+			_uni_grid[i] = 2;
 }
 
-void automaton::arctic()
+void automaton::populate()
 {
-	auto resize = [this]()
+	auto apply = [this](int state, int mod = 3)
 	{
-		_size = _width * _height;
-		delete[] _phase_grid;
-		_phase_grid = new bool[_size];
-		std::memset(_phase_grid, 0, sizeof(bool) * _size);
+		for (int i = 0; i < _size; i++)
+			if (_phase_grid[i] && _uni_grid[i] == state)
+				_uni_grid[i] += mod;
 	};
 
-	auto height = _height;
-	_height /= 3;
-	resize();
+	spots_large();
+	apply(0);
+	scatter(-24, 1);
+	apply(0, 6);
 
-	generate();
-	for (int i = 0; i < _size; i++)
-		if (_phase_grid[i])
-			switch (_uni_grid[i])
-			{
-			case 0:
-				_uni_grid[i] = 6;
-				break;
-			case 1:
-				_uni_grid[i] = 7;
-				break;
-			case 5:
-				_uni_grid[i] = 8;
-				break;
-			}
+	spots_small();
+	apply(1);
 
-	_height = height;
-	resize();
+	spots_large();
+	apply(2);
+	scatter(-2, 1);
+	apply(2);
 }
 
-automaton::automaton(uint32_t width, uint32_t height)
-	: _width(width), _height(height), _size(width * height)
+void automaton::irrigate()
+{
+	spots_large(true);
+	for (int i = 0; i < _size; i++)
+		if (_phase_grid[i])
+			_uni_grid[i] = 7;
+}
+
+automaton::automaton(uint32_t width, uint32_t height, uint32_t seed)
+	: _width(width), _height(height), _size(width * height), _seed(seed)
 {
 	_phase_grid = new bool[_size];
 	_uni_grid = new uint8_t[_size];
-	_engine = std::mt19937(std::random_device()()); 
+	_engine = std::minstd_rand(_seed);
 	clear();
 }
 
@@ -164,20 +181,20 @@ automaton::~automaton()
 
 void automaton::terraform(int phases)
 {
+	_seed = _engine();
 	_iterations = 0;
 	_phases = phases;
 
-	landmasses();
-
+	fertilize();
 	if (phases < 2)
 		return;
-	wastes();
+	vegetate();
 	if (phases < 3)
 		return;
-	vegetation();
+	populate();
 	if (phases < 4)
 		return;
-	arctic();
+	irrigate();
 }
 
 void automaton::clear()
@@ -211,4 +228,9 @@ uint32_t automaton::iterations() const
 uint32_t automaton::phases() const
 {
 	return _phases;
+}
+
+uint32_t automaton::seed() const
+{
+	return _seed;
 }
