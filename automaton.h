@@ -30,6 +30,7 @@ class automaton
 	void spots_large(bool less = false);
 	void spots_small();
 	void terrain();
+	void craters(int a = 12, int b = 17);
 
 	//phases
 	void fertilize();
@@ -42,7 +43,6 @@ public:
 	~automaton();
 
 	void terraform(int phases = 1);
-	void clear();
 
 	uint8_t get(uint32_t x, uint32_t y) const;
 

@@ -67,10 +67,6 @@ void application::handle_events()
 		{
 			switch (event.key.code)
 			{
-			case sf::Keyboard::Enter:
-				_automaton->clear();
-				_time = 0;
-				break;
 			case sf::Keyboard::Num1:
 				update(1);
 				break;

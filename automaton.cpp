@@ -91,7 +91,7 @@ void automaton::spots_small()
 
 void automaton::terrain()
 {
-	//rule funcion
+	//rule function
 	auto rules = [](int count) { return count > 5; };
 
 	//counts of each stage's operations (base + fluctuation)
@@ -115,6 +115,19 @@ void automaton::terrain()
 		operate(rules);
 	if (std::uniform_int_distribution<int>(0, 1)(_engine))
 		flip_all();
+}
+
+void automaton::craters(int a, int b)
+{
+	//rule function
+	auto rules = [](int count) { return count > 5; };
+
+	//count of operations
+	auto c = std::uniform_int_distribution<int>(a, b)(_engine);
+
+	scatter();
+	for (int i = 0; i < c; i++)
+		operate(rules);
 }
 
 //phases
@@ -147,7 +160,7 @@ void automaton::populate()
 	scatter(-24, 1);
 	apply(0, 6);
 
-	spots_small();
+	spots_large();
 	apply(1);
 
 	spots_large();
@@ -160,7 +173,7 @@ void automaton::irrigate()
 {
 	spots_large(true);
 	for (int i = 0; i < _size; i++)
-		if (_phase_grid[i])
+		if (_phase_grid[i] && (_uni_grid[i] % 3))
 			_uni_grid[i] = 7;
 }
 
@@ -170,7 +183,10 @@ automaton::automaton(uint32_t width, uint32_t height, uint32_t seed)
 	_phase_grid = new bool[_size];
 	_uni_grid = new uint8_t[_size];
 	_engine = std::minstd_rand(_seed);
-	clear();
+	_iterations = 0;
+	_phases = 0;
+	std::memset(_phase_grid, 0, sizeof(bool) * _size);
+	std::memset(_uni_grid, 0, sizeof(uint8_t) * _size);
 }
 
 automaton::~automaton()
@@ -195,14 +211,6 @@ void automaton::terraform(int phases)
 	if (phases < 4)
 		return;
 	irrigate();
-}
-
-void automaton::clear()
-{
-	std::memset(_phase_grid, 0, sizeof(bool) * _size);
-	std::memset(_uni_grid, 0, sizeof(uint8_t) * _size);
-	_iterations = 0;
-	_phases = 0;
 }
 
 uint8_t automaton::get(uint32_t x, uint32_t y) const
