@@ -3,47 +3,7 @@
 void application::draw(uint32_t x, uint32_t y)
 {
 	_cell.setPosition({ (float)(x * _cell_dim), (float)(y * _cell_dim) });
-
-	sf::Color sand = { 0xff, 0xda, 0xb9 },
-		soil = { 0xb0, 0x5b, 0x3b },
-		greenery = { 0x5d, 0x82, 0x33 },
-
-		rock = { 0x9e, 0x75, 0x40 }, //{ 0x73, 0x40, 0x46 },
-		swamp = { 0x44, 0x5c, 0x3c },
-		tree = { 0x1f, 0x44, 0x1e },
-
-		succulent = { 0x7f, 0x8b, 0x52 },
-		water = { 0x32, 0x52, 0x88 };
-
-	sf::Color color;
-	switch (_terrgen->get(x, y))
-	{
-	case 0:
-		color = sand;
-		break;
-	case 1:
-		color = soil;
-		break;
-	case 2:
-		color = greenery;
-		break;
-	case 3:
-		color = rock;
-		break;
-	case 4:
-		color = swamp;
-		break;
-	case 5:
-		color = tree;
-		break;
-	case 6:
-		color = succulent;
-		break;
-	case 7:
-		color = water;
-		break;
-	}
-	_cell.setFillColor(color);
+	_cell.setFillColor(_terrgen->get(x, y));
 	_window->draw(_cell);
 }
 
@@ -96,7 +56,7 @@ void application::render()
 	_window->display();
 }
 
-application::application(terrgen* terrgen, const std::string& title, uint32_t dimension, uint32_t framerate_limit)
+application::application(terrgen* terrgen, const std::string& title, uint32_t dimension)
 	: _terrgen(terrgen), _title(title)
 {
 	_cell_dim = dimension;
@@ -104,14 +64,11 @@ application::application(terrgen* terrgen, const std::string& title, uint32_t di
 	auto height = _terrgen->height() * _cell_dim;
 
 	_window = new sf::RenderWindow(sf::VideoMode(width, height), _title);
-	if (!framerate_limit)
-		_window->setVerticalSyncEnabled(true);
-	else
-		_window->setFramerateLimit(framerate_limit);
+	_window->setVerticalSyncEnabled(true);
 
 	_cell = sf::RectangleShape({ (float)_cell_dim, (float)_cell_dim });
-	_cell.setOutlineColor(sf::Color::Black);
-	_cell.setOutlineThickness(-1.f);
+	//_cell.setOutlineColor(sf::Color::Black);
+	//_cell.setOutlineThickness(-1.f);
 }
 
 application::~application()

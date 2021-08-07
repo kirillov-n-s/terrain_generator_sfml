@@ -219,9 +219,39 @@ void terrgen::generate(int phases)
 	irrigate();
 }
 
-uint8_t terrgen::get(uint32_t x, uint32_t y) const
+sf::Color terrgen::get(uint32_t x, uint32_t y) const
 {
-	return _uni_grid[(y * _width + x) % _size];
+	sf::Color
+		sand = { 0xff, 0xda, 0xb9 },
+		soil = { 0xb0, 0x5b, 0x3b },
+		greenery = { 0x5d, 0x82, 0x33 },
+
+		rock = { 0x9e, 0x75, 0x40 }, //{ 0x73, 0x40, 0x46 },
+		swamp = { 0x44, 0x5c, 0x3c },
+		tree = { 0x1f, 0x44, 0x1e },
+
+		succulent = { 0x7f, 0x8b, 0x52 },
+		water = { 0x32, 0x52, 0x88 };
+
+	switch (_uni_grid[y * _width + x])
+	{
+	case 0:
+		return sand;
+	case 1:
+		return soil;
+	case 2:
+		return greenery;
+	case 3:
+		return rock;
+	case 4:
+		return swamp;
+	case 5:
+		return tree;
+	case 6:
+		return succulent;
+	case 7:
+		return water;
+	}
 }
 
 uint32_t terrgen::width() const

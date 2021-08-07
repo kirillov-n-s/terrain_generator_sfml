@@ -22,7 +22,7 @@ class application
 	void render();
 
 public:
-	application(terrgen* terrgen, const std::string& title = "", uint32_t dimension = 10u, uint32_t framerate_limit = 16u);
+	application(terrgen* terrgen, const std::string& title = "", uint32_t dimension = 10u);
 	~application();
 
 	void run();

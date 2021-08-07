@@ -1,6 +1,7 @@
 #pragma once
 #include <random>
 #include <functional>
+#include <SFML/Graphics/Color.hpp>
 
 class terrgen
 {
@@ -46,7 +47,7 @@ public:
 
 	void generate(int phases = 4);
 
-	uint8_t get(uint32_t x, uint32_t y) const;
+	sf::Color get(uint32_t x, uint32_t y) const;
 
 	uint32_t width() const;
 	uint32_t height() const;
