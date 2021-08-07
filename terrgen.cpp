@@ -28,7 +28,7 @@ void terrgen::set(uint32_t x, uint32_t y, bool value)
 	_phase_grid[(y * _width + x) % _size] = value;
 }
 
-void terrgen::flip_all()
+void terrgen::flip()
 {
 	for (int i = 0; i < _size; i++)
 		_phase_grid[i] ^= true;
@@ -99,6 +99,7 @@ void terrgen::cavern(int steps, int a, int b)
 	scatter(a, b);
 	for (int i = 0; i < steps; i++)
 		operate(rules);
+	flip();
 }
 
 void terrgen::terrain()
@@ -114,17 +115,17 @@ void terrgen::terrain()
 	scatter();
 	for (int i = 0; i < c1; i++)
 		operate(rules);
-	flip_all();
+	flip();
 	for (int i = 0; i < c2; i++)
 		operate(rules);
-	flip_all();
+	flip();
 	for (int i = 0; i < c3; i++)
 		operate(rules);
-	flip_all();
+	flip();
 	for (int i = 0; i < c4; i++)
 		operate(rules);
 	if (std::uniform_int_distribution<int>(0, 1)(_engine))
-		flip_all();
+		flip();
 }
 
 void terrgen::craters(int steps)
@@ -183,14 +184,12 @@ void terrgen::irrigate()
 			_uni_grid[i] = 7;
 }
 
-terrgen::terrgen(uint32_t width, uint32_t height, uint32_t seed)
-	: _width(width), _height(height), _size(width * height), _seed(seed)
+//public interface
+terrgen::terrgen(uint32_t width, uint32_t height)
+	: _width(width), _height(height), _size(width * height)
 {
 	_phase_grid = new bool[_size];
 	_uni_grid = new uint8_t[_size];
-	_engine = std::minstd_rand(_seed);
-	_iterations = 0;
-	_phases = 0;
 	std::memset(_phase_grid, 0, sizeof(bool) * _size);
 	std::memset(_uni_grid, 0, sizeof(uint8_t) * _size);
 }
@@ -201,9 +200,9 @@ terrgen::~terrgen()
 	delete[] _uni_grid;
 }
 
-void terrgen::generate(int phases)
+void terrgen::generate(int phases, uint32_t seed)
 {
-	_seed = _engine();
+	_engine.seed(_seed = seed);
 	_iterations = 0;
 	_phases = phases;
 
@@ -254,6 +253,7 @@ sf::Color terrgen::get(uint32_t x, uint32_t y) const
 	}
 }
 
+//properties
 uint32_t terrgen::width() const
 {
 	return _width;
