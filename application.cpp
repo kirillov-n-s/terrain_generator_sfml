@@ -64,7 +64,8 @@ application::application(terrgen* terrgen, const std::string& title, uint32_t di
 	auto height = _terrgen->height() * _cell_dim;
 
 	_window = new sf::RenderWindow(sf::VideoMode(width, height), _title);
-	_window->setVerticalSyncEnabled(true);
+	_window->setFramerateLimit(5);
+	//_window->setVerticalSyncEnabled(true);
 
 	_cell = sf::RectangleShape({ (float)_cell_dim, (float)_cell_dim });
 	//_cell.setOutlineColor(sf::Color::Black);
@@ -87,8 +88,7 @@ void application::run()
 		render();
 
 		uint64_t fps = 1000 / std::chrono::duration_cast<std::chrono::milliseconds>(clock.now() - then).count();
-		std::string log = "[FPS: " + std::to_string(fps)
-			+ "] [Time: " + std::to_string(_time)
+		std::string log = "[Time: " + std::to_string(_time)
 			+ "] [Iterations: " + std::to_string(_terrgen->iterations())
 			+ "] [Phases: " + std::to_string(_terrgen->phases())
 			+ "] [Seed: " + std::to_string(_terrgen->seed()) + "]";

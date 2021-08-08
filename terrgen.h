@@ -1,10 +1,24 @@
 #pragma once
 #include <random>
 #include <functional>
-#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics.hpp>
 
 class terrgen
 {
+	const sf::Color* COLORS = new sf::Color[]
+	{
+		{ 0xff, 0xda, 0xb9 }, //sand
+		{ 0xb0, 0x5b, 0x3b }, //soil
+		{ 0x5d, 0x82, 0x33 }, //greenery
+
+		{ 0x9e, 0x75, 0x40 }, //rock
+		{ 0x44, 0x5c, 0x3c }, //swamp
+		{ 0x1f, 0x44, 0x1e }, //tree
+
+		{ 0x7f, 0x8b, 0x52 }, //succulent
+		{ 0x32, 0x52, 0x88 }, //water
+	};
+
 	bool* _phase_grid;
 	uint8_t* _uni_grid;
 
